@@ -21,63 +21,119 @@ import entity.payment.CreditCard;
 import entity.payment.PaymentTransaction;
 
 /**
- * class to send and receive http request
- * 
+ * Class cung cấp phương thức gửi Request lên Server và nhận dữ liệu trả về
+ * Date : 09/12/2021
  * @author PIE
  * @version 1.0
  */
+
 public class API {
-
+	// Nguyen Quoc Tien
+	// Thuộc tính lấy thời gian theo định dạng Date Format - Năm/Tháng/Ngày
 	public static DateFormat DATE_FORMATER = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	
+	// Thuộc tính in thông tin ra Console
 	private static Logger LOGGER = Utils.getLogger(Utils.class.getName());
-
+	
+	
 	/**
-	 * Phuong thuc giup khoi tao cac api dang GET
+	 * Phương thức thiết lập kết nối tới Server
+	 * @param url: đường dẫn
+	 * @param method: giao thức
+	 * @param token: mã dùng để xác thực người dùng
+	 * @return connection
+	 * @throws IOException
+	 */
+	
+	private static HttpURLConnection setupConnection(String url, String method, String token) throws IOException{
+		// Nguyen Quoc Tien
+		LOGGER.info("Request URL: " + url + "\n");
+		URL line_api_url = new URL(url);
+		HttpURLConnection conn = (HttpURLConnection) line_api_url.openConnection();
+		conn.setDoInput(true);
+		conn.setDoOutput(true);
+		conn.setRequestMethod(method); 
+		conn.setRequestProperty("Content-Type", "application/json");
+		conn.setRequestProperty("Authorization", "Bearer " + token);
+		return conn;
+	}
+
+	
+	/**
+	 * Đọc phản hồi (bao gồm dữ liệu,...) trả về từ server
+	 * @param Connection: Liên kết đến server hiện tại
+	 * @return Thông điệp
+	 * @throws IOException
+	 */
+	private static String readResponse(HttpURLConnection connection) throws IOException{
+		BufferedReader in;
+		String inputLine;
+		
+		if (connection.getResponseCode() / 100 == 2) {
+			in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+		} else {
+			in = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+		}
+		
+		StringBuilder response = new StringBuilder();
+		while ((inputLine = in.readLine()) != null)
+			response.append(inputLine);
+		in.close();
+		LOGGER.info("Respone Info: " + response.toString());
+		return response.toString();
+
+	}
+	/**
 	 * 
-	 * @param url   duong dan toi server can request
-	 * @param token doan ma bam can cung cap de xac thuc nguoi dung
-	 * @return respone phan hoi tu server (string)
+	 * @author PIE
+	 * @param url: Đường dẫn đển Server
+	 * @param token: Đoạn mã cần cung cấp để xác thực người dùng
+	 * @return response: Phản hồi từ Server
 	 * @throws Exception
 	 */
 	public static String get(String url, String token) throws Exception {
-		HttpURLConnection conn = setupConnection(url, "GET", token);
+		// 		Phần 1 : Setup
+		HttpURLConnection conn = setupConnection(url,"GET",token);
 
-		String response = readRespone(conn);
+        // 		Phần 2 : Đọc dữ liệu trả về từ server
+		String response = readResponse(conn);
 
 		return response;
 	}
 
-	int var;
-
 	/**
-	 * Phuong thuc giup goi cac api dang POST (thanh toan,...)
-	 * 
-	 * @param url  duong dan toi server can request
-	 * @param data du lieu dua len server can xu li (JSON)
-	 * @return respone phan hoi tu server (String)
+	 * Phuong thuc giup goi cac api dan POST (thanh toan, ...)
+	 * @author Tran The Lam
+	 * @param url: duong dan toi server can request
+	 * @param data: du lieu dua len server de xu ly (dang JSON)
+	 * @return response: phan hoi tu server (dang String)
 	 * @throws IOException
 	 */
 	public static String post(String url, String data, String token) throws IOException {
+		//		Cho phép PATH protocol
 		allowMethods("PATCH");
-		HttpURLConnection conn = setupConnection(url, "GET", token);
+		
+        //		Phần 1: Setup
+		HttpURLConnection conn = setupConnection(url,"POST",token);
 
+        //		Phần 2 : gửi dữ liệu
 		Writer writer = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream()));
 		writer.write(data);
 		writer.close();
 
-		String respone = readRespone(conn);
-
-		return respone;
+        //		Phần 3: đọc dữ liệu gửi về từ server
+		String response = readResponse(conn);
+		return response.toString();
 	}
 
 	/**
-	 * Phuong thuc cho phep goi cac giao thuc API khac nhau nhu PATCH, PUT,...
-	 * 
-	 * @deprecated chi hoat dong voi java <=11
-	 * @param methods giao thuc can cho phep (PATCH,PUT)
+	 * Phuong thuc cho phep goi cac loai giao thuc API khac nhau nhu PATCH, PUT, ... (chi hoat dong voi Java 11)
+	 * @deprecated chi hoat dong voi Java <= 11
+	 * @param methods: giao thuc can cho cho phep (PATCH, PUT, ...)
 	 */
 	private static void allowMethods(String... methods) {
 		try {
+			// Nguyen Quoc Tien
 			Field methodsField = HttpURLConnection.class.getDeclaredField("methods");
 			methodsField.setAccessible(true);
 
@@ -94,34 +150,6 @@ public class API {
 		} catch (NoSuchFieldException | IllegalAccessException e) {
 			throw new IllegalStateException(e);
 		}
-	}
-
-	private static HttpURLConnection setupConnection(String url, String method, String token) throws IOException {
-		LOGGER.info("Request URL: " + url + "\n");
-		URL line_api_url = new URL(url);
-		HttpURLConnection conn = (HttpURLConnection) line_api_url.openConnection();
-		conn.setDoInput(true);
-		conn.setDoOutput(true);
-		conn.setRequestMethod("GET");
-		conn.setRequestProperty("Content-Type", "application/json");
-		conn.setRequestProperty("Authorization", "Bearer " + token);
-		return conn;
-	}
-
-	private static String readRespone(HttpURLConnection conn) throws IOException {
-		BufferedReader in;
-		String inputLine;
-		if (conn.getResponseCode() / 100 == 2) {
-			in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-		} else {
-			in = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-		}
-		StringBuilder response = new StringBuilder();
-		while ((inputLine = in.readLine()) != null)
-			response.append(inputLine);
-		in.close();
-		LOGGER.info("Respone Info: " + response.toString());
-		return response.substring(0, response.length() - 1).toString();
 	}
 
 }

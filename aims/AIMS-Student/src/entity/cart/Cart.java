@@ -72,5 +72,14 @@ public class Cart {
         }
         return null;
     }
+    
+    public boolean checkRushProduct(){
+    	for (Object obj : lstCartMedia) {
+            CartMedia cm = (CartMedia) obj;
+        }
+    	
+    	return true;
+    	
+    }
 
 }

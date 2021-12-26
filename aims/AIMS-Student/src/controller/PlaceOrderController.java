@@ -16,6 +16,9 @@ import entity.invoice.Invoice;
 import entity.order.Order;
 import entity.order.OrderMedia;
 import views.screen.popup.PopupScreen;
+import shippingfees.CalculateRushOrderShippingFees;
+import shippingfees.CalculateShippingFees;
+import shippingfees.ShippingFeeCalculator;
 
 /**
  * This class controls the flow of place order usecase in our AIMS project
@@ -27,9 +30,16 @@ public class PlaceOrderController extends BaseController{
      * Just for logging purpose
      */
     private static Logger LOGGER = utils.Utils.getLogger(PlaceOrderController.class.getName());
+    
+    /**
+     * Shipping Fees
+     */
+    
+    private ShippingFeeCalculator calculateShippingFee = new CalculateShippingFees();
+    private ShippingFeeCalculator calculateRushOrderShippingFee = new CalculateRushOrderShippingFees();
 
     /**
-     * This method checks the avalibility of product when user click PlaceOrder button
+     * This method checks the availability of product when user click PlaceOrder button
      * @throws SQLException
      */
     public void placeOrder() throws SQLException{
@@ -47,7 +57,9 @@ public class PlaceOrderController extends BaseController{
             CartMedia cartMedia = (CartMedia) object;
             OrderMedia orderMedia = new OrderMedia(cartMedia.getMedia(), 
                                                    cartMedia.getQuantity(), 
-                                                   cartMedia.getPrice());    
+                                                   cartMedia.getPrice(),
+                                                   cartMedia.getRushOrder());        										
+            		                                 
             order.getlstOrderMedia().add(orderMedia);
         }
         return order;
@@ -81,53 +93,80 @@ public class PlaceOrderController extends BaseController{
    * @throws IOException
    */
     public void validateDeliveryInfo(HashMap<String, String> info) throws InterruptedException, IOException{
-    	
+    	if(validateAddress(info.get("address")) == false 
+    			|| validatePhoneNumber(info.get("phone")) == false 
+    			|| validateName(info.get("name")) == false) {
+    		throw new InvalidDeliveryInfoException("Load Order Invalid!");
+    	}
     }
     
     public boolean validatePhoneNumber(String phoneNumber) {
-    
-    if(phoneNumber.length() !=10) return false;
-    if(!phoneNumber.startsWith("0")) return false;
-    try {
-    	Integer.parseInt(phoneNumber);
-    } catch (NumberFormatException e) {
-    	return false;
-    }
-    return true;
+    	// Nguyen Quoc Tien - 20181276
+    	if (phoneNumber.length() != 10) return false;
+    	
+    	// check the phone number start with 
+    	if (!phoneNumber.startsWith("0")) return false;
+    	
+    	try {
+    		Integer.parseInt(phoneNumber);
+    	} catch (NumberFormatException e) {
+    		return false;
+    	}
+    	return true;
     }
     
     public boolean validateName(String name) {
-    	if(name == null) return false;
-    	if(name.equals("null")) return false;
-    	Pattern p = Pattern.compile("[^A-Za-z]");
+    	// Nguyen Quoc Tien - 20181276
+    	// check null   	
+    	if (name == null) return false;
+    	
+    	// check null character
+    	if(name.split(" ").length >5){
+            return false;
+        }
+    	
+    	// Check special_character
+    	Pattern p = Pattern.compile("[^a-z ]", Pattern.CASE_INSENSITIVE);
     	Matcher m = p.matcher(name);
-    	boolean b = m.find();
-    	if(b==true) return false;
+    	boolean hasSpecialChar = m.find();
+    	
+    	if (hasSpecialChar) return false;
+    	
     	return true;
     }
     
     public boolean validateAddress(String address) {
-    	if(address == null) return false;
-    	if(address.equals("null")) return false;
-    	else {
-    	Pattern p = Pattern.compile("[^A-Za-z0-9\s]");
+    	// Nguyen Quoc Tien - 20181276
+    	// check null   	
+    	if (address == null) return false;
+    	
+    	// Check special_character
+    	Pattern p = Pattern.compile("[^\s a-zA-Z0-9 ]", Pattern.CASE_INSENSITIVE);
     	Matcher m = p.matcher(address);
-    	boolean b = m.find();
-    	if(b==true) return false;
+    	boolean hasSpecialChar = m.find();
+    	
+    	if (hasSpecialChar) return false;
+    	
     	return true;
-    	}
     }
     
-
+    
     /**
      * This method calculates the shipping fees of order
      * @param order
      * @return shippingFee
      */
     public int calculateShippingFee(Order order){
-        Random rand = new Random();
-        int fees = (int)( ( (rand.nextFloat()*10)/100 ) * order.getAmount() );
-        LOGGER.info("Order Amount: " + order.getAmount() + " -- Shipping Fees: " + fees);
-        return fees;
+        return calculateShippingFee.calculateShippingFees(order);
+    }
+    
+    
+    /**
+     * This method calculates Rush Order shipping fees of order
+     * @param order
+     * @return shippingFee
+     */
+    public int calculateRushOrderShippingFee(Order order){
+        return calculateRushOrderShippingFee.calculateShippingFees(order);
     }
 }

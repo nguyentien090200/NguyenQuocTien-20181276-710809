@@ -35,7 +35,6 @@ public class Book extends Media {
         this.bookCategory = bookCategory;
     }
 
-    // getter and setter
     public int getId() {
         return this.id;
     }

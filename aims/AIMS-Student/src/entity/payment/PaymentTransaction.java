@@ -22,4 +22,27 @@ public class PaymentTransaction {
 	public String getErrorCode() {
 		return errorCode;
 	}
+	
+	/**
+	 * @author Tran The Lam
+	 */
+	
+	@Override
+	public String toString() {
+		return "PaymentTransaction [errorCode=" + errorCode + ", card=" + card.toString() + ", transactionId="
+				+ transactionId + ", transactionContent=" + transactionContent + ", amount=" + amount + ", createdAt="
+				+ createdAt + "]";
+	}
+	
+	/**
+	 * Phuong thuc Getter va Setter
+	 */
+
+	public String getTransactionId() {
+		return transactionId;
+	}
+
+	public void setTransactionId(String transactionId) {
+		this.transactionId = transactionId;
+	}
 }

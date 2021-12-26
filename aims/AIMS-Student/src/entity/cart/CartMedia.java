@@ -7,15 +7,17 @@ public class CartMedia {
     private Media media;
     private int quantity;
     private int price;
+    private boolean rushOrder;
 
     public CartMedia(){
 
     }
 
-    public CartMedia(Media media, Cart cart, int quantity, int price) {
+    public CartMedia(Media media, Cart cart, int quantity, int price, boolean rushOrder) {
         this.media = media;
         this.quantity = quantity;
         this.price = price;
+        this.rushOrder = rushOrder;
     }
     
     public Media getMedia() {
@@ -41,12 +43,21 @@ public class CartMedia {
     public void setPrice(int price) {
         this.price = price;
     }
+    
+    public boolean getRushOrder() {
+        return this.rushOrder;
+    }
+
+    public void setRushOrder(boolean rushOrder) {
+        this.rushOrder = rushOrder;
+    }
 
     @Override
     public String toString() {
         return "{" 
             + " media='" + media + "'" 
             + ", quantity='" + quantity + "'" 
+            + ", rushOrder='" + rushOrder + "'"
             + "}";
     }
 

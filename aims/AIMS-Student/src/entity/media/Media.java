@@ -22,16 +22,24 @@ public class Media {
     protected int id;
     protected String title;
     protected String category;
-    protected int value; // the real price of product (eg: 450)
-    protected int price; // the price which will be displayed on browser (eg: 500)
+    protected int value; 
+    protected int price; 
     protected int quantity;
     protected String type;
     protected String imageURL;
+    
+    // Nguyen Quoc Tien
+    // size of item
+	protected int itemLength;
+	protected int itemWidth;
+	protected int itemWeight;
+      
+    protected Boolean spRushOrder; // support Rush Order
 
     public Media() throws SQLException{
         stm = AIMSDB.getConnection().createStatement();
     }
-
+    
     public Media (int id, String title, String category, int price, int quantity, String type) throws SQLException{
         this.id = id;
         this.title = title;
@@ -40,7 +48,23 @@ public class Media {
         this.quantity = quantity;
         this.type = type;
 
-        //stm = AIMSDB.getConnection().createStatement();
+      
+    }
+
+    public Media (int id, String title, String category, int price, int quantity, String type, int itemLength, int itemWidth, int itemWeight, Boolean spRushOrder) throws SQLException{
+        this.id = id;
+        this.title = title;
+        this.category = category;
+        this.price = price;
+        this.quantity = quantity;
+        this.type = type;
+        this.itemLength = itemLength;
+        this.itemWidth = itemWidth;
+        this.itemWeight = itemWeight;
+        
+        this.spRushOrder = spRushOrder;
+
+        
     }
 
     public int getQuantity() throws SQLException{
@@ -62,9 +86,10 @@ public class Media {
                 .setCategory(res.getString("category"))
                 .setMediaURL(res.getString("imageUrl"))
                 .setPrice(res.getInt("price"))
-                .setType(res.getString("type"));
+                .setType(res.getString("type"))
+            	.setSupportRushOrder(this.getBoolean());
         }
-        return null;
+        return new Media();
     }
 
     public List getAllMedia() throws SQLException{
@@ -79,7 +104,8 @@ public class Media {
                 .setCategory(res.getString("category"))
                 .setMediaURL(res.getString("imageUrl"))
                 .setPrice(res.getInt("price"))
-                .setType(res.getString("type"));
+                .setType(res.getString("type"))
+            	.setSupportRushOrder(getBoolean());
             medium.add(media);
         }
         return medium;
@@ -154,6 +180,53 @@ public class Media {
         this.type = type;
         return this;
     }
+    
+    // Length, Width, Weight - Getter, Setter for item
+    public int getLength() {
+        return this.itemLength;
+    }
+
+    public Media setLength(int itemLength) {
+        this.itemLength = itemLength;
+        return this;
+    }
+    
+    public int getWidth() {
+        return this.itemWidth;
+    }
+
+    public Media setWidth(int itemWidth) {
+        this.itemWidth = itemWidth;
+        return this;
+    }
+    
+    public int getWeight() {
+        return this.itemWeight;
+    }
+
+    public Media setWeight(int itemWeight) {
+        this.itemWeight = itemWeight;
+        return this;
+    }
+    
+    
+    public Boolean getSupportRushOrder() {
+		return spRushOrder;
+	}
+
+	public Media setSupportRushOrder(Boolean spRushOrder) {
+		
+		this.spRushOrder = spRushOrder;
+		return this;
+	}
+	
+	/**
+     * 
+     * @return
+     */
+    public boolean getBoolean() {
+    	return false;
+    }
 
     @Override
     public String toString() {
@@ -165,6 +238,10 @@ public class Media {
             ", quantity='" + quantity + "'" +
             ", type='" + type + "'" +
             ", imageURL='" + imageURL + "'" +
+            ", itemLength='" + itemLength + "'" +
+            ", itemWidth='" + itemWidth + "'" +
+            ", itemWeight='" + itemWeight + "'" +
+            ", spRushOrder='" + spRushOrder + "'" +
             "}";
     }    
 

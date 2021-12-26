@@ -81,10 +81,8 @@ public class PaymentController extends BaseController {
 	 * @return {@link java.util.Map Map} represent the payment result with a
 	 *         message.
 	 */
-	public Map<String, String> payOrder(int amount, String contents, String cardNumber, String cardHolderName,
+	public PaymentTransaction payOrder(int amount, String contents, String cardNumber, String cardHolderName,
 			String expirationDate, String securityCode) {
-		Map<String, String> result = new Hashtable<String, String>();
-		result.put("RESULT", "PAYMENT FAILED!");
 		try {
 			this.card = new CreditCard(cardNumber, cardHolderName, Integer.parseInt(securityCode),
 					getExpirationDate(expirationDate));
@@ -92,12 +90,38 @@ public class PaymentController extends BaseController {
 			this.interbank = new InterbankSubsystem();
 			PaymentTransaction transaction = interbank.payOrder(card, amount, contents);
 
-			result.put("RESULT", "PAYMENT SUCCESSFUL!");
-			result.put("MESSAGE", "You have succesffully paid the order!");
+			return transaction;
 		} catch (PaymentException | UnrecognizedException ex) {
-			result.put("MESSAGE", ex.getMessage());
+
+			return null;
 		}
-		return result;
+
+	}
+	
+	/**
+	 * @author Tran The Lam
+	 * @param amount So Tien Hoan lai
+	 * @param contents Noi Dung hoan tien
+	 * @param cardNumber So The cua Khach Hang
+	 * @param cardHolderName Ten khach hang
+	 * @param expirationDate Ngay Het Han
+	 * @param securityCode Ma The
+	 * @return
+	 */
+	public PaymentTransaction refund(int amount, String contents, String cardNumber, String cardHolderName,
+			String expirationDate, String securityCode) {
+		try {
+			this.card = new CreditCard(cardNumber, cardHolderName, Integer.parseInt(securityCode),
+					getExpirationDate(expirationDate));
+
+			this.interbank = new InterbankSubsystem();
+			PaymentTransaction transaction = interbank.refund(card, amount, contents);
+
+			return transaction ;
+		
+		} catch (PaymentException | UnrecognizedException ex) {
+			return null;
+		}
 	}
 
 	public void emptyCart(){
